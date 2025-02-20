@@ -1,83 +1,3 @@
-// "use client"
-
-// import Image from "next/image";
-// import edit from "../../public/buttonEdit.png";
-// import add from "../../public/buttonAdd.png";
-// import { useEffect, useState } from "react";
-// import { Card } from "@/components/card";
-
-// interface IData {
-//   id: number;
-//   title: string;
-//   description: string;
-//   completed: boolean;
-//   createdAt: string;
-//   updatedAt: string;
-// }
-
-// export default function Home() {
-//   const [task, setTask] = useState<IData[]>([]);
-
-//   const edit = () => {
-//     alert("Foi");
-//   };
-
-// const calculatePosition = (index: number) => {
-//   // Definindo as colunas e linhas para os cards com base no índice e tamanho da tela
-//   const cols = window.innerWidth < 640 ? 2 : window.innerWidth < 1024 ? 3 : 4; // 2, 3 ou 4 colunas dependendo da largura da tela
-//   const x = (index % cols) * 340;  // Posição X (220px para cada card, ajustável)
-//   const y = Math.floor(index / cols) * 200;  // Posição Y (260px para cada card, ajustável)
-//   return { x, y };
-// };
-
-//   useEffect(() => {
-//     const load = async () => {
-//       try {
-//         const res = await fetch("http://localhost:8080/task/");  // Ajuste para buscar as tarefas do backend
-//         if (!res.ok) {
-//           throw new Error(`Erro ao buscar dados: ${res.status}`);
-//         }
-//         const data: IData[] = await res.json();
-//         setTask(data);
-//       } catch (error) {
-//         console.error("Erro ao buscar dados:", error);
-//       }
-//     };
-//     load();
-//   }, []);
-
-//   return (
-//     <div className="h-screen w-screen flex md:p-5 p-2 relative">
-//       <div>
-//         <button className="bg-slate-600 p-2 rounded-full flex items-center justify-center shadow-lg transition ease-in-out hover:scale-110 active:bg-slate-700 active:scale-100">
-//           <Image src={add} className="w-10" alt="Adicionar" width={1000} height={1000} priority />
-//         </button>
-//       </div>
-
-//       <div className="h-5/6 w-full relative">
-//         {task.map((taskItem, index) => {
-//           const { x, y } = calculatePosition(index); // Calculando a posição
-
-//           return (
-//             <Card 
-//               key={taskItem.id} 
-//               edit={() => edit()} 
-//               title={taskItem.title} 
-//               description={taskItem.description} 
-//               completed={taskItem.completed} 
-//               createdAt={new Date(taskItem.createdAt)} 
-//               updatedAt={new Date(taskItem.updatedAt)} 
-//               positionX={x} // Posição calculada
-//               positionY={y} // Posição calculada
-//             />
-//           );
-//         })}
-//       </div>
-//     </div>
-//   );
-// }
-
-
 "use client"
 
 import Image from "next/image";
@@ -89,7 +9,7 @@ import { Input, Textarea } from "@mui/joy";
 import { Button } from "@mui/material";
 
 interface IData {
-  id: number;
+  _id: string;
   title: string;
   description: string;
   completed: boolean;
@@ -103,36 +23,141 @@ export default function Home() {
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [taskToEdit, setTaskToEdit] = useState<IData | null>(null); // Novo estado para tarefa a ser editada
+  const [id, setId] = useState<string>("");
+  const [taskToEdit, setTaskToEdit] = useState<IData | null>(null);
+  const [taskEdit, setTaskEdit] = useState<IData | null>();
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
   const openModalEdit = (taskToEdit: IData) => {
-    setTaskToEdit(taskToEdit); // Define a tarefa que será editada
+    setTaskToEdit(taskToEdit);
     setTitle(taskToEdit.title);
+    setId(taskToEdit._id);
     setDescription(taskToEdit.description);
     setIsModalEditOpen(true);
   };
+
   const closeModalEdit = () => setIsModalEditOpen(false);
 
-  const addTask = () => {
+  const addTask = async () => {
     console.log(`Título: ${title}\nDescrição: ${description}`);
-    closeModal();
+    try {
+      const newTask = {
+        title: title,
+        description: description,
+        completed: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const res = await fetch("http://localhost:8080/task/", {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTask),
+      });
+
+      if (!res.ok)
+        throw new Error (`Erro ao criar task: ${res.status} - ${res.statusText}`);
+
+      const data = await res.json();
+      setTask((prevTasks) => [...prevTasks, data]);
+      closeModal();
+    } catch (error) {
+      console.error("Erro ao criar task: ", error);
+    }
   };
 
-  const editTask = () => {
-    console.log(`Título: ${title}\nDescrição: ${description}`);
-    closeModalEdit();
-  };
 
-  const changeCheck = (taskId: number) => {
-    setTask((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      )
-    );
+
+
+
+  const editTask = async () => {
+    console.log(`Título: ${title}\nDescrição: ${description}`);
+  
+    try {
+      const res = await fetch(`http://localhost:8080/task/${id}`);
+      if (!res.ok) {
+        throw new Error(`Erro ao buscar dados: ${res.status}`);
+      }
+      const data: IData = await res.json();
+      setTaskEdit(data);
+  
+      const newTask = {
+        title: title,
+        description: description,
+        completed: data.completed,
+        createdAt: data.createdAt,
+        updatedAt: new Date(),
+      };
+  
+      const updateRes = await fetch(`http://localhost:8080/task/${id}`, {
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTask),
+      });
+  
+      if (!updateRes.ok)
+        throw new Error(`Erro ao criar task: ${updateRes.status} - ${await updateRes.text()}`);
+  
+      window.location.reload();
+      closeModalEdit();
+  
+    } catch (error) {
+      console.error("Erro ao editar task: ", error);
+    }
   };
+  
+
+
+
+
+  const changeCheck = async (taskId: string) => {
+    console.log(`Título: ${title}\nDescrição: ${description}`);
+  
+    try {
+      const res = await fetch(`http://localhost:8080/task/${taskId}`);
+      if (!res.ok) {
+        throw new Error(`Erro ao buscar dados: ${res.status}`);
+      }
+      const data: IData = await res.json();
+      setTaskEdit(data);
+  
+      const newTask = {
+        title: data.title,
+        description: data.description,
+        completed: !data.completed,
+        createdAt: data.createdAt,
+        updatedAt: new Date(),
+      };
+  
+      const updateRes = await fetch(`http://localhost:8080/task/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTask),
+      });
+  
+      if (!updateRes.ok)
+        throw new Error(`Erro ao criar task: ${updateRes.status} - ${await updateRes.text()}`);
+  
+      window.location.reload();
+      closeModalEdit();
+  
+    } catch (error) {
+      console.error("Erro ao editar task: ", error);
+    }
+  };
+  
+  
+
+
+
 
   const calculatePosition = (index: number) => {
     const cols = window.innerWidth < 640 ? 2 : window.innerWidth < 1024 ? 3 : 4;
@@ -141,20 +166,29 @@ export default function Home() {
     return { x, y };
   };
 
-  useEffect(() => {
-    const loadFakeData = () => {
-      const fakeData: IData[] = [
-        { id: 1, title: "Tarefa 1", description: "Descrição da tarefa 1", completed: false, createdAt: "2025-02-17T10:00:00", updatedAt: "2025-02-17T10:00:00" },
-        { id: 2, title: "Tarefa 2", description: "Descrição da tarefa 2 ", completed: true, createdAt: "2025-02-17T10:00:00", updatedAt: "2025-02-17T10:00:00" },
-        { id: 3, title: "Tarefa 3", description: "Descrição da tarefa 3", completed: false, createdAt: "2025-02-17T10:00:00", updatedAt: "2025-02-17T10:00:00" },
-        { id: 4, title: "Tarefa 4", description: "Descrição da tarefa 4", completed: false, createdAt: "2025-02-17T10:00:00", updatedAt: "2025-02-17T10:00:00" },
-        { id: 5, title: "Tarefa 5", description: "Descrição da tarefa 5", completed: true, createdAt: "2025-02-17T10:00:00", updatedAt: "2025-02-17T10:00:00" },
-        { id: 6, title: "Tarefa 6", description: "Descrição da tarefa 6", completed: false, createdAt: "2025-02-17T10:00:00", updatedAt: "2025-02-17T10:00:00" },
-      ];
-      setTask(fakeData);
-    };
-    loadFakeData();
+
+
+  const load = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/task/");
+      if (!res.ok) {
+        throw new Error(`Erro ao buscar dados: ${res.status}`);
+      }
+      const data: IData[] = await res.json();
+      setTask((prevTasks) => [...prevTasks, ...data]);
+      console.log(data)
+    } catch (error) {
+      console.error("Erro ao buscar dados:", error);
+    }
+  };
+
+    useEffect(() => {
+    load();
   }, []);
+
+
+
+
 
   return (
     <div className="h-screen w-screen flex md:p-5 p-2 relative md:flex-row flex-col">
@@ -168,7 +202,7 @@ export default function Home() {
 
           return (
             <Card 
-              key={taskItem.id} 
+              key={taskItem._id} 
               edit={() => openModalEdit(taskItem)}
               title={taskItem.title} 
               description={taskItem.description} 
@@ -177,8 +211,8 @@ export default function Home() {
               updatedAt={new Date(taskItem.updatedAt)} 
               positionX={x}
               positionY={y}
-              changeCheck={() => changeCheck(taskItem.id)}
-              taskId={taskItem.id}
+              changeCheck={() => changeCheck(taskItem._id)}
+              taskId={taskItem._id}
             />
           );
         })}

@@ -18,8 +18,8 @@ interface ICard {
     edit: () => void;
     positionX: number;
     positionY: number;
-    changeCheck: (taskId: number) => void;
-    taskId: number
+    changeCheck: (taskId: string) => void;
+    taskId: string
 }
 
 export const Card = ({ title, description, completed, createdAt, updatedAt, edit, positionX, positionY, changeCheck, taskId }: ICard) => {
@@ -50,12 +50,12 @@ export const Card = ({ title, description, completed, createdAt, updatedAt, edit
         <Rnd default={{ x: positionX, y: positionY, width: 320, height: 'auto', }} style={{cursor: 'default'}}>
             <div className="rounded-xl p-3 md:w-80 w-64 object-cover flex flex-col items-center justify-between bg-gray-800 shadow-xl">
                 <div className='flex items-start justify-between w-full'>
-                    <h1 className="font-bold text-2xl mb-2">{title}</h1>
+                    <h1 className="font-bold text-2xl mb-2 text-slate-100">{title}</h1>
                     <button onClick={handleEditClick} className='transition ease-in-out hover:scale-110 active:scale-100 active:opacity-70'>
                         <Image src={editButton} className="w-8" alt="Editar" width={1000} height={1000} priority></Image>
                     </button>
                 </div>
-                <h2 className="text-lg">{description}</h2>
+                <h2 className="text-lg text-slate-100">{description}</h2>
                 <div className="flex justify-between w-full flex-col my-2">
                     <button 
                         onClick={() => changeCheck(taskId)} 
@@ -86,12 +86,12 @@ export const Card = ({ title, description, completed, createdAt, updatedAt, edit
     ) : (
         <div className="rounded-xl p-3 md:w-80 w-72 object-cover flex flex-col items-center justify-between bg-gray-800 shadow-xl">
             <div className='flex items-start justify-between w-full'>
-                <h1 className="font-bold text-2xl mb-2">{title}</h1>
+                <h1 className="font-bold text-2xl mb-2 text-slate-100">{title}</h1>
                 <button onClick={handleEditClick} className='transition ease-in-out hover:scale-110 active:scale-100 active:opacity-70'>
                     <Image src={editButton} className="w-8" alt="Editar" width={1000} height={1000} priority></Image>
                 </button>
             </div>
-            <h2 className="text-lg">{description}</h2>
+            <h2 className="text-lg text-slate-100">{description}</h2>
             <div className="flex justify-between w-full flex-col my-2">
                 <button 
                     onClick={() => changeCheck(taskId)} 
