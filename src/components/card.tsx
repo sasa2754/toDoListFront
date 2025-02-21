@@ -22,7 +22,7 @@ interface ICard {
     taskId: string
 }
 
-export const Card = ({ title, description, completed, createdAt, updatedAt, edit, positionX, positionY, changeCheck, taskId }: ICard) => {
+export const MyCard = ({ title, description, completed, createdAt, updatedAt, edit, positionX, positionY, changeCheck, taskId }: ICard) => {
 
     const handleEditClick = (event: React.MouseEvent) => {
         event.stopPropagation();

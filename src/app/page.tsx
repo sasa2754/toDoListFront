@@ -3,10 +3,11 @@
 import Image from "next/image";
 import add from "../../public/buttonAdd.png";
 import { useEffect, useState } from "react";
-import { Card } from "@/components/card";
+import { MyCard } from "@/components/card";
 import { Modal } from "@/components/modal";
 import { Input, Textarea } from "@mui/joy";
-import { Button } from "@mui/material";
+import { Button, Card, Link } from "@mui/material";
+import CardContent from '@mui/material/CardContent';
 
 interface IData {
   _id: string;
@@ -26,6 +27,10 @@ export default function Home() {
   const [id, setId] = useState<string>("");
   const [taskToEdit, setTaskToEdit] = useState<IData | null>(null);
   const [taskEdit, setTaskEdit] = useState<IData | null>();
+  const [isLogin, setIsLogin] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -190,7 +195,7 @@ export default function Home() {
 
 
 
-  return (
+  return (isLogin) ? (
     <div className="h-screen w-screen flex md:p-5 p-2 relative md:flex-row flex-col">
       <button onClick={openModal} className="bg-slate-600 p-2 rounded-full flex items-center justify-center shadow-lg transition ease-in-out hover:scale-110 active:bg-slate-700 active:scale-100 aspect-square max-h-14 max-w-14">
         <Image src={add} className="w-10" alt="Adicionar" width={1000} height={1000} priority />
@@ -201,7 +206,7 @@ export default function Home() {
           const { x, y } = calculatePosition(index);
 
           return (
-            <Card 
+            <MyCard 
               key={taskItem._id} 
               edit={() => openModalEdit(taskItem)}
               title={taskItem.title} 
@@ -260,6 +265,26 @@ export default function Home() {
         </div>
       </Modal>
 
+    </div>
+  ) : (
+    <div className="flex items-center justify-center h-screen">
+      <div className="flex bg-slate-50 w-96 items-center flex-col p-2 rounded shadow-lg gap-5">
+        <h1 className="text-2xl font-bold">Login</h1>
+        <div className="flex flex-col gap-1">
+          <label className="text-slate-800 text-lg">Email</label>
+          <Input onChange={(e) => setEmail(e.target.value)} placeholder="Digite seu email..." variant="soft" sx={{ backgroundColor: 'transparent', '--Input-radius': '0px', borderBottom: '2px solid', borderColor: 'neutral.outlinedBorder', '&:hover': { borderColor: 'neutral.outlinedHoverBorder', }, '&::before': { border: '1px solid var(--Input-focusedHighlight)', transform: 'scaleX(0)', left: 0, right: 0, bottom: '-2px', top: 'unset', transition: 'transform .15s cubic-bezier(0.1,0.9,0.2,1)', borderRadius: 0, }, '&:focus-within::before': { transform: 'scaleX(1)', }, }} />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-slate-800 text-lg">Senha</label>
+          <Input onChange={(e) => setPassword(e.target.value)} placeholder="Digite sua senha..." variant="soft" sx={{ backgroundColor: 'transparent', '--Input-radius': '0px', borderBottom: '2px solid', borderColor: 'neutral.outlinedBorder', '&:hover': { borderColor: 'neutral.outlinedHoverBorder', }, '&::before': { border: '1px solid var(--Input-focusedHighlight)', transform: 'scaleX(0)', left: 0, right: 0, bottom: '-2px', top: 'unset', transition: 'transform .15s cubic-bezier(0.1,0.9,0.2,1)', borderRadius: 0, }, '&:focus-within::before': { transform: 'scaleX(1)', }, }} />
+          <Link href="#" underline="none" className="self-end mt-2">
+          <h4 className="text-sm">Não tem uma conta?</h4>
+          </Link>
+        </div>
+
+        <Button variant="outlined">Entrar</Button>
+      </div>
     </div>
   );
 }
